@@ -15,118 +15,107 @@ def main_loop():
     print(1)
     # Создаем окно
     root = tk.Tk(   )
+    # root.attributes("-fullscreen", True)
     root.title("Пример цикла с Tkinter")
     root.geometry('800x480')
 
 
     frame1 = tk.Frame(master=root, height=100 )
     frame1.pack(fill=tk.BOTH, side=tk.LEFT, expand=False)
+
+    frame2= tk.Frame(master=root, height=100)
+    frame2.pack(fill=tk.BOTH, side=tk.TOP, expand=False)
     # Функция, которая будет выполняться при нажатии кнопки
     def button_click1():
-        ser.write("1\n".encode())
-        camera.pack_forget
-        nonlocal running
         nonlocal tmp
-        nonlocal x_values
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
-
+        nonlocal running
+        button_stop_click()
         running = True
         tmp = 1
 
     def button_click2():
-        ser.write("2\n".encode())
-        nonlocal running
         nonlocal tmp
-        nonlocal x_values
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
-
-        running = True
+        nonlocal running
+        button_stop_click()
         tmp = 2
-
-
-
     
     def button_click3():
-        ser.write("3\n".encode())
-        nonlocal running
         nonlocal tmp
-        nonlocal x_values 
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
-        running = True
+        nonlocal running
+        ser.write("3\n".encode())
+        button_stop_click()
         tmp = 3
 
-
     def button_click4():
-        ser.write("4\n".encode())
-        nonlocal running
         nonlocal tmp
-        nonlocal x_values
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
-        camera.pack_forget
+        nonlocal running
+        ser.write("4\n".encode())
+        button_stop_click()
         running = True
         tmp = 4
 
-
-
     def button_click5():
-        ser.write("5\n".encode())
-        nonlocal running
         nonlocal tmp
-        nonlocal x_values
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
+        nonlocal running
+        ser.write("5\n".encode())
+        button_stop_click()
         running = True
         tmp = 5
 
     
     def button_click6():
-        ser.write("6\n".encode())
-        nonlocal running
         nonlocal tmp
-
-        nonlocal x_values 
-        nonlocal y_values
-        x_values = []
-        y_values = []
-        ax.clear()
-
+        nonlocal running
+        ser.write("6\n".encode())
+        button_stop_click()
         running = True
         tmp = 6
 
-
     def button_click7():
-        ser.write("7\n".encode())
-        nonlocal running
         nonlocal tmp
+        nonlocal running
+        ser.write("7\n".encode())
+        button_stop_click()
+        running = True
+        tmp = 7
+
+    def button_start_click():
+        global cap
+        cap=cv2.VideoCapture(0)
+
+        ser.reset_input_buffer()
+        nonlocal run
         nonlocal x_values
         nonlocal y_values
         x_values = []
         y_values = []
-        ax.clear()
+        button_stop.pack()
+        button_stop['state'] = 'active'
+        button_start['state'] = 'disabled'
+        run=True
 
-        running = True
-        tmp = 7
+
+    
+    def button_stop_click():
+        nonlocal run
+        button_stop.pack()
+        button_start['state'] = 'active'
+        button_stop['state'] = 'disabled'
+        canvas.get_tk_widget().pack_forget()
+        camera.pack_forget()
+        run = False
+        cap.release()
+
+
+
+
 
 
 
     tmp = 0
 
-    random_label = tk.Label(root, text="", font=("Helvetica", 24))
-    random_label.pack()
+    # random_label = tk.Label(root, text="", font=("Helvetica", 24))
+    # random_label.pack()
 
 
     # Создаем кнопку
@@ -146,30 +135,34 @@ def main_loop():
 
 
     image3 = ImageTk.PhotoImage(file="pulse-oximeter.png")
-    button3 = tk.Button(frame1, image=image3, text="Нажми меня", command=button_click3)
+    button3 = tk.Button(frame1, image=image3, command=button_click3)
     button3.pack()
-    # button3['state'] = 'disabled'
 
 
     image4 = ImageTk.PhotoImage(file="ecg-lines.png")
-    button4 = tk.Button(frame1, image=image4,
-                        text="Нажми меня", command=button_click4)
+    button4 = tk.Button(frame1, image=image4, command=button_click4)
     button4.pack()
 
     image5 = ImageTk.PhotoImage(file="red-blood-cells.png")
-    button5 = tk.Button(frame1, image=image5,
-                        text="Нажми меня", command=button_click5)
+    button5 = tk.Button(frame1, image=image5, command=button_click5)
     button5.pack()
 
     image6 = ImageTk.PhotoImage(file="temperature.png")
-    button6 = tk.Button(frame1, image=image6,
-                        text="Нажми меня", command=button_click6)
+    button6 = tk.Button(frame1, image=image6, command=button_click6)
     button6.pack()
 
     image7 = ImageTk.PhotoImage(file="arm.png")
-    button7 = tk.Button(frame1, image=image7,
-                        text="Нажми меня", command=button_click7)
+    button7 = tk.Button(frame1, image=image7, command=button_click7)
     button7.pack()
+
+    button_start = tk.Button(frame2, text="Start", command=button_start_click)
+    button_start.pack(side=LEFT)
+
+    button_stop = tk.Button(frame2, text="Stop", command=button_stop_click)
+    button_stop.pack(side=LEFT)
+    button_start['state'] = 'disabled'
+    button_stop['state'] = 'disabled'
+
     # Устанавливаем флаг для цикла
     running = True
 
@@ -182,16 +175,16 @@ def main_loop():
 
     # Создаем виджет Canvas для отображения графика
     canvas = FigureCanvasTkAgg(fig, master=root)
-    canvas.get_tk_widget().pack()
+    canvas.get_tk_widget().pack_forget()
 
     camera = Label(root)
-    camera.pack()
+    camera.pack_forget()
 
     # Функция для добавления случайных чисел к графику
     def update_plot():
         response = ser.readline().decode('latin-1').strip()
         print((response))
-        random_label.config(text=str(response))
+        # random_label.config(text=str(response))
 
         value = re.findall(r'\d+', response)
         print(response)
@@ -237,19 +230,27 @@ def main_loop():
         # cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
         # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
         
+    run = False
 
     # Цикл, который будет выполняться, пока running равно True
     while running:
-        if tmp!=2:
-            canvas.get_tk_widget().pack()
-            camera.pack_forget()
-            update_plot()
-        else:
-            camera.pack()
+        if run:
+            if tmp == 0:
+                    camera.pack_forget()
+                    canvas.get_tk_widget().pack_forget()
 
-            canvas.get_tk_widget().pack_forget()
+            if tmp==2:
+                    camera.pack()
+                    canvas.get_tk_widget().pack_forget()
+                    update_camera()  # Обновляем случайное число
 
-            update_camera()  # Обновляем случайное число
+            if tmp!=0 and tmp!=2:
+                    canvas.get_tk_widget().pack()
+                    camera.pack_forget()
+                    update_plot()
+        
+
+
         root.update()  # Обновляем окно
 
     root.destroy()  # Закрываем окно при завершении цикла
@@ -257,7 +258,6 @@ def main_loop():
 
 if __name__ == "__main__":
     
-        
     buffer=[]
     cap = cv2.VideoCapture(0)
     if cap is None or not cap.isOpened():
