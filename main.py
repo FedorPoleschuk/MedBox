@@ -2,16 +2,27 @@ import struct
 import tkinter as tk
 import serial
 from matplotlib.figure import Figure
+import pandas as pd
 from PIL import Image as Img
 from PIL import ImageTk  # $ pip install pillow
 from tkinter import *
 from tkinter.ttk import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-ser = serial.Serial('COM3', 1000000)
+ser = serial.Serial('/dev/ttyUSB0', 1000000)
 import re
 import cv2
+import datetime
+import time
+import os
+
+def patient_data():
+    name = 'Panov_Semen_Stanislavovich'
+    os.makedirs(name, mode=0o777, exist_ok=False)
+    os.chdir(name)
+
 
 def main_loop():
+    sensor = { 1:"sensor1", 2 :"sensor2", 3 :"sensor3", 4:"sensor4", 5 :"sensor5", 6 :"sensor6", 7 :"sensor7"}
     print(1)
     # Создаем окно
     root = tk.Tk(   )
@@ -25,6 +36,7 @@ def main_loop():
 
     frame2= tk.Frame(master=root, height=100)
     frame2.pack(fill=tk.BOTH, side=tk.TOP, expand=False)
+
     # Функция, которая будет выполняться при нажатии кнопки
     def button_click1():
         nonlocal tmp
@@ -82,7 +94,6 @@ def main_loop():
     def button_start_click():
         global cap
         cap=cv2.VideoCapture(0)
-
         ser.reset_input_buffer()
         nonlocal run
         nonlocal x_values
@@ -101,22 +112,70 @@ def main_loop():
         button_stop.pack()
         button_start['state'] = 'active'
         button_stop['state'] = 'disabled'
+        button_stop_record_click()
         canvas.get_tk_widget().pack_forget()
         camera.pack_forget()
+        button_start_record.pack_forget()
+        button_stop_record.pack_forget()
         run = False
         cap.release()
 
+    def button_start_record_click():
+        nonlocal isRecord
+        nonlocal tmp
+        button_stop_record['state'] = 'active'
+        button_start_record['state'] = 'disabled'
+        nonlocal timestamp
+        timestamp = time.asctime(time.localtime())
+        if tmp != 2:
+            nonlocal path_to_csv
+            path_to_csv = os.getcwd() + '/' + sensor[tmp] + '_' + timestamp + '.csv'
+            with open(path_to_csv, 'w') as f:
+                f.close()
+            df = pd.DataFrame({'timestamp': [timestamp[-13:]],
+                                't': ['        '],
+                                'values': ['        ']})
+            df.to_csv(path_to_csv, sep='\t', index=False)
+        else:
+            nonlocal shape
+            nonlocal path_to_avi
+            global video_avi
+            path_to_avi = os.getcwd() + '/' + sensor[tmp] + '_' + timestamp + '.avi'
+            video_avi = cv2.VideoWriter(path_to_avi,cv2.VideoWriter_fourcc('M','J','P','G'), 20.0, (w, h))
+        isRecord = 1
+         
+    def button_stop_record_click():
+        nonlocal isRecord
+        button_start_record['state'] = 'active'
+        button_stop_record['state'] = 'disabled'
+        video_avi.release()
+        isRecord = 0
 
+    def recording_buttons():
+        button_start_record.pack(side=RIGHT)
+        button_stop_record.pack(side=RIGHT)
 
-
-
-
+    def recording():
+        nonlocal path_to_csv
+        df = pd.DataFrame({'timestamp': ['          '],
+                            't': [x_values[-1]],
+                            'values': [y_values[-1]]})
+        df.to_csv(path_to_csv, sep='\t',index=False, header=False, mode='a')
 
     tmp = 0
 
+    isRecord = 0
+
+    timestamp = ""
+
+    path_to_csv = ""
+
+    path_to_avi = ""
+
+    shape =(0,0)
+
     # random_label = tk.Label(root, text="", font=("Helvetica", 24))
     # random_label.pack()
-
 
     # Создаем кнопку
     image1 = ImageTk.PhotoImage(file="stethoscope.png")
@@ -163,6 +222,11 @@ def main_loop():
     button_start['state'] = 'disabled'
     button_stop['state'] = 'disabled'
 
+    button_start_record = tk.Button(frame2, text="Start recording", command=button_start_record_click)
+    button_stop_record = tk.Button(frame2, text="Stop recording", command=button_stop_record_click)
+    button_start_record['state'] = 'active'
+    button_stop_record['state'] = 'disabled'
+
     # Устанавливаем флаг для цикла
     running = True
 
@@ -204,12 +268,15 @@ def main_loop():
             canvas.draw()
         except Exception: pass
 
-    def update_camera():
-        _, frame = cap.read()
+    def update_camera(rec):
+        ret, frame = cap.read()
 
     # Convert image from one color space to other
         opencv_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
 
+       
+        if rec and ret:
+            video_avi.write(frame)
         # Capture the latest frame and transform to image
         captured_image = Img.fromarray(opencv_image)
 
@@ -235,31 +302,45 @@ def main_loop():
     # Цикл, который будет выполняться, пока running равно True
     while running:
         if run:
+            recording_buttons()
+
             if tmp == 0:
-                    camera.pack_forget()
-                    canvas.get_tk_widget().pack_forget()
+                camera.pack_forget()
+                canvas.get_tk_widget().pack_forget()
 
             if tmp==2:
-                    camera.pack()
-                    canvas.get_tk_widget().pack_forget()
-                    update_camera()  # Обновляем случайное число
+                camera.pack()
+                canvas.get_tk_widget().pack_forget()
+                update_camera(isRecord)  # Обновляем случайное число
 
             if tmp!=0 and tmp!=2:
-                    canvas.get_tk_widget().pack()
-                    camera.pack_forget()
-                    update_plot()
-        
+                canvas.get_tk_widget().pack()
+                camera.pack_forget()
+                update_plot()
+            
+            if isRecord and tmp != 2:
+                recording()
+                print("RECOOOORDING!!!!!!!!!!!!!!!!!!!!!!!RECOOOORDING")
 
 
         root.update()  # Обновляем окно
 
     root.destroy()  # Закрываем окно при завершении цикла
 
+def send():
+    pass
+
+def send_email():
+    os.chdir('..')
+    send("Panov_Semen_Stanislavovich")
 
 if __name__ == "__main__":
     
     buffer=[]
     cap = cv2.VideoCapture(0)
+    h=int(cap.get(4))
+    w=int(cap.get(3))
+    video_avi = cv2.VideoWriter("default.avi", cv2.VideoWriter_fourcc('M','J','P','G'), 20.0,(w, h))
     if cap is None or not cap.isOpened():
         buffer.append(2)
         
@@ -267,5 +348,6 @@ if __name__ == "__main__":
 
     # response = ser.readline().decode().strip()
     # print("response" ,response)
-
+    patient_data()
     main_loop()
+    send_email()
