@@ -72,9 +72,10 @@ def main_loop():
 
 
     def patient_info():
+        button_send['state'] = 'disabled'
+
         global INIT
         INIT = 1
-        button_stop_record_click()
         button_stop_click()
         sideBar.pack_forget()
         TopBar.pack_forget()
@@ -186,7 +187,19 @@ def main_loop():
         isRecord = 1
          
     def button_stop_record_click():
+        try:
+            if len(os.listdir(path)) == 0:
+                print("Directory is empty")
+
+
+            else:
+                button_send['state'] = 'active'
+        except Exception: pass
+
+        
+
         nonlocal isRecord
+
         button_start_record['state'] = 'active'
         button_stop_record['state'] = 'disabled'
         video_avi.release()
@@ -221,11 +234,14 @@ def main_loop():
         
         path = re.sub(r"\s+", "", translit(username, 'ru', reversed=True))+time.strftime("%d%m%Y%H%M", time.localtime())
         os.makedirs(path, mode=0o777, exist_ok=False)
+        
 
         SignBar.pack_forget()
 
     def restart_button_click():
+        nonlocal path
         shutil.rmtree(path)
+        path =""
         patient_info()
 
     def button_send_click():
@@ -346,6 +362,8 @@ def main_loop():
     button_send = Button(BottomBar, text="SEND",
                             command=button_send_click)
     button_send.pack(side=tk.RIGHT, fill=tk.X)
+    button_send['state'] = 'disabled'
+
     
 
     button_start_record = Button(TopBar, text="Start recording", command=button_start_record_click)
