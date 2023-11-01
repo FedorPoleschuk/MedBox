@@ -16,7 +16,7 @@ from PIL import ImageTk  # $ pip install pillow
 from tkinter import *
 from tkinter.ttk import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-# ser = serial.Serial('COM3', 1000000)
+ser = serial.Serial('/dev/ttyUSB0', 1000000)
 import re
 import cv2
 import datetime
@@ -43,8 +43,8 @@ def main_loop():
     path_to_csv = ""
     path_to_avi = ""
     shape = (0, 0)
-    font_entry = ('Arial', 15)
-    label_font = ('Arial', 16, 'bold')
+    font_entry = ('Arial', 20)
+    label_font = ('Arial', 30, 'bold')
     running = True
     sensor = {1: "Sthetoscope", 2: "Othoscope", 3: "PO",
               4: "ECG", 5: "Glucose ", 6: "Temperature", 7: "BP"}
@@ -54,19 +54,21 @@ def main_loop():
     root = tk.Tk(   )
     root.attributes("-fullscreen", True)
     root.title("MedBox")
-    root.geometry('800x480')
+    root.geometry('1920x1080')
     
-    sideBar = tk.Frame(master=root)
-    sideBar.pack(fill=tk.Y, side=tk.LEFT, expand=False)
+    
 
     TopBar= tk.Frame(master=root)
     TopBar.pack(fill=tk.X, side=tk.TOP, expand=False)
 
     BottomBar = tk.Frame(master=root)
-    BottomBar.pack(fill=tk.X, side=tk.BOTTOM, expand=False)
+    BottomBar.pack(side=tk.BOTTOM, expand=False)
+
+    sideBar = tk.Frame(master=root)
+    sideBar.pack(fill=tk.Y, side=tk.LEFT, expand=True)
 
     SignBar = tk.Frame(master=root)
-    SignBar.pack(fill=tk.BOTH,expand=True,pady=30)
+    SignBar.pack(fill=tk.BOTH,expand=True,pady=200)
 
     # Функция, которая будет выполняться при нажатии кнопки
 
@@ -79,7 +81,9 @@ def main_loop():
         button_stop_click()
         sideBar.pack_forget()
         TopBar.pack_forget()
-        SignBar.pack()
+        BottomBar.pack_forget()
+
+        SignBar.pack(pady=200)
 
     def button_click1():
         nonlocal tmp
@@ -136,7 +140,7 @@ def main_loop():
     def button_start_click():
         global cap
         cap=cv2.VideoCapture(0)
-        ser.reset_input_buffer()
+        # ser.reset_input_buffer()
         nonlocal run
         nonlocal x_values
         nonlocal y_values
@@ -229,6 +233,8 @@ def main_loop():
 
         sideBar.pack(fill=tk.Y, side=tk.LEFT, expand=False)
         TopBar.pack(fill=tk.X, side=tk.TOP, expand=False)
+        BottomBar.pack(fill=tk.X, side=tk.BOTTOM, expand=False)
+
         patient_label.pack(side=tk.LEFT, padx=30, expand=False)
         patient_email_label.pack(side=tk.LEFT, padx=30, expand=False)
         
@@ -283,7 +289,7 @@ def main_loop():
     
 
     s = Style()
-    s.configure('.', font=('Arial',16,'bold'))
+    s.configure('.', font=('Arial',30,'bold'))
 
     # START FORM
     name_frame=tk.Frame(master=SignBar)
@@ -377,7 +383,7 @@ def main_loop():
     # Устанавливаем флаг для цикла
 
     # Создаем объект Figure из Matplotlib
-    fig = Figure(figsize=(7, 5), dpi=100)
+    fig = Figure(figsize=(16, 12), dpi=100)
     ax = fig.add_subplot(111)
     ax.set_title("График случайных чисел")
     x_values = []
@@ -416,7 +422,14 @@ def main_loop():
 
         if rec and ret:
             video_avi.write(frame)
+
+        scale_percent = 200  # percent of original size
+
+        width = int(opencv_image.shape[1] * scale_percent / 100)
+        height = int(opencv_image.shape[0] * scale_percent / 100)
+        dim = (width, height)
         # Capture the latest frame and transform to image
+        opencv_image = cv2.resize(opencv_image, dim, interpolation=cv2.INTER_AREA)
         captured_image = Img.fromarray(opencv_image)
 
         # Convert captured image to photoimage
@@ -439,7 +452,7 @@ def main_loop():
                 canvas.get_tk_widget().pack_forget()
 
             if tmp==2:
-                camera.pack(side=tk.TOP)
+                camera.pack(side=tk.TOP, padx = 300, fill=tk.BOTH, expand=True)
                 canvas.get_tk_widget().pack_forget()
                 update_camera(isRecord)  # Обновляем случайное число
 
