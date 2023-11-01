@@ -16,7 +16,7 @@ from PIL import ImageTk  # $ pip install pillow
 from tkinter import *
 from tkinter.ttk import *
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-ser = serial.Serial('COM3', 1000000)
+# ser = serial.Serial('COM3', 1000000)
 import re
 import cv2
 import datetime
@@ -44,7 +44,7 @@ def main_loop():
     path_to_avi = ""
     shape = (0, 0)
     font_entry = ('Arial', 15)
-    label_font = ('Arial', 16)
+    label_font = ('Arial', 16, 'bold')
     running = True
     sensor = {1: "Sthetoscope", 2: "Othoscope", 3: "PO",
               4: "ECG", 5: "Glucose ", 6: "Temperature", 7: "BP"}
@@ -52,7 +52,7 @@ def main_loop():
 
     # Создаем окно
     root = tk.Tk(   )
-    # root.attributes("-fullscreen", True)
+    root.attributes("-fullscreen", True)
     root.title("MedBox")
     root.geometry('800x480')
     
@@ -250,8 +250,8 @@ def main_loop():
 
 
         body_part = MIMEText("MESSAGE_BODY", 'plain')
-        msg['Subject'] = "ANALYSIS" + username
-        msg['From'] = "****"
+        msg['Subject'] = "ANALYSIS " + username
+        msg['From'] = "healthcatalyst"
         msg['To'] = email
         # Add body to email
         msg.attach(body_part)
@@ -261,11 +261,11 @@ def main_loop():
             msg.attach(MIMEApplication(file.read(), Name='Analysis.zip'))
         try:
             # подключаемся к почтовому сервису
-            smtp = smtplib.SMTP("smtp.gmail.com", 587)
+            smtp = smtplib.SMTP("smtp.yandex.ru", 465)
             smtp.starttls()
             smtp.ehlo()
             # логинимся на почтовом сервере
-            smtp.login("from login", "app password")
+            smtp.login("healthcatalyst@yandex.ru", "jthnjbkptshvgtsn")
             # пробуем послать письмо
             smtp.sendmail(msg['From'], msg['To'],  msg.as_string())
 
@@ -282,6 +282,8 @@ def main_loop():
     
     
 
+    s = Style()
+    s.configure('.', font=('Arial',16,'bold'))
 
     # START FORM
     name_frame=tk.Frame(master=SignBar)
@@ -315,7 +317,7 @@ def main_loop():
 
     image1 = ImageTk.PhotoImage(file="./stethoscope.png")
     button1 = Button(sideBar, image=image1, text="Нажми меня",
-                     command=restart_button_click)
+                     command=button_click1)
     button1.pack()
     if 1 in buffer:
         button2['state'] = 'disabled'
@@ -324,6 +326,7 @@ def main_loop():
     button2 = Button(sideBar, image=image2,
                         text="Нажми меня", command=button_click2)
     button2.pack()
+    print(Button)
     if 2 in buffer:
         button2['state'] = 'disabled'
 
@@ -356,10 +359,10 @@ def main_loop():
     button_stop['state'] = 'disabled'
 
 
-    button_restart = Button(BottomBar, text="RESTART",
+    button_restart = Button(BottomBar, text="Restart",
                             command=restart_button_click)
     button_restart.pack(side=tk.LEFT, fill=tk.X)
-    button_send = Button(BottomBar, text="SEND",
+    button_send = Button(BottomBar, text="Send",
                             command=button_send_click)
     button_send.pack(side=tk.RIGHT, fill=tk.X)
     button_send['state'] = 'disabled'
