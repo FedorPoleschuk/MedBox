@@ -21,18 +21,25 @@ import re
 import cv2
 import datetime
 import time
-
-
-# Create a multipart message
-
-# def patient_data():
-    # name = 'Panov_Semen_Stanislavovich'
-    # os.makedirs(name, mode=0o777, exist_ok=False)
-    # os.chdir(name)
-
-
+layout = {
+    'en':[
+        ['1','2','3','4','5','6','7','8','9','0','←'],
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l'],
+        ['z','x','c','v','b','n','m','.','@'],
+        ['Lang','Space']
+    ],
+    'rus':[
+        ['1','2','3','4','5','6','7','8','9','0','.','←'],
+        ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],
+        ['ф','ы','в','а','п','р','о','л','д','ж',"э"],
+        ['я','ч','с','м','и','т','ь','б','ю','ё'],
+        ['Lang','Space']]
+}
+text=""
+state="rus"
 def main_loop():
-
+    entry=""
     INIT = ""
     tmp = 0
     isRecord = 0
@@ -49,31 +56,158 @@ def main_loop():
     sensor = {1: "Sthetoscope", 2: "Othoscope", 3: "PO",
               4: "ECG", 5: "Glucose ", 6: "Temperature", 7: "BP"}
 
+    layout = {
+    'en':[
+        ['1','2','3','4','5','6','7','8','9','0','←'],
+        ['q','w','e','r','t','y','u','i','o','p'],
+        ['a','s','d','f','g','h','j','k','l'],
+        ['z','x','c','v','b','n','m','.','@'],
+        ['Lang','Space']
+    ],
+    'rus':[
+        ['1','2','3','4','5','6','7','8','9','0','.','←'],
+        ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],
+        ['ф','ы','в','а','п','р','о','л','д','ж',"э"],
+        ['я','ч','с','м','и','т','ь','б','ю','ё'],
+        ['Lang','Space']]
+}
 
     # Создаем окно
     root = tk.Tk(   )
-    root.attributes("-fullscreen", True)
+    # root.attributes("-fullscreen", True)
     root.title("MedBox")
     root.geometry('1920x1080')
     
     
 
+
     TopBar= tk.Frame(master=root)
     TopBar.pack(fill=tk.X, side=tk.TOP, expand=False)
+    TopBar.pack_forget()
 
     BottomBar = tk.Frame(master=root)
     BottomBar.pack(side=tk.BOTTOM, expand=False)
+    BottomBar.pack_forget()
 
     sideBar = tk.Frame(master=root)
     sideBar.pack(fill=tk.Y, side=tk.LEFT, expand=True)
+    sideBar.pack_forget()
 
     SignBar = tk.Frame(master=root)
-    SignBar.pack(fill=tk.BOTH,expand=True,pady=200)
+    SignBar.pack(fill=tk.Y,expand=True)
 
+    keyframe  = tk.Frame(master=SignBar)
+    keyframe.grid_forget()
+
+    keysframe_rus = tk.Frame(keyframe)
+    keysframe_rus.grid(row=3)
+
+    keysframe_en = tk.Frame(keyframe)
+    keysframe_en.grid(row=3)
+
+    keysframe_en.grid_forget()
+    def key(self):
+        global state
+        global text
+        match state:
+            case "en":
+                state = "en"
+                match self:
+                    case "Lang":
+                        state = "rus"
+                    case "Space":
+                        if entry == 'email':
+                            email_entry.insert(END," ")
+                        if entry == 'username':
+                            username_entry.insert(END," ")
+                        
+                    case "←": 
+                        if entry == 'email':
+                            email_entry.delete(len(email_entry.get())-1,END)
+                        if entry == 'username':
+                            username_entry.delete(len(username_entry.get())-1,END) 
+                    case _:
+                        text=text+self
+                        if entry == 'email':
+                            email_entry.insert(END,self)
+                        if entry == 'username':
+                            username_entry.insert(END,self)
+
+            case "rus":
+                state = "rus"
+                match self:     
+                    case "Lang":
+                        state = "en"
+                    case "Space":
+                        if entry == 'email':
+                            email_entry.insert(END," ")
+                        if entry == 'username':
+                            username_entry.insert(END," ")          
+                    case "←": 
+                        if entry == 'email':
+                            email_entry.delete(len(email_entry.get())-1,END)
+                        if entry == 'username':
+                            username_entry.delete(len(username_entry.get())-1,END)  
+                    case _:
+                        text = text + self
+                        if entry == 'email':
+                            email_entry.insert(END,self)
+                        if entry == 'username':
+                            username_entry.insert(END,self)
+        match state:
+            case "rus":
+                keysframe_rus.grid(sticky='s')
+                keysframe_en.grid_forget()
+            case "en":
+                keysframe_rus.grid_forget()
+                keysframe_en.grid(sticky='s')
+           
+
+
+
+
+
+    
     # Функция, которая будет выполняться при нажатии кнопки
+
+    def Keyboard():
+
+        for st in layout.keys():
+            match st:
+                case "en":
+                    frame =  keysframe_en
+                case "rus":
+                    frame =  keysframe_rus
+            
+            rows = layout.get(st)
+
+            for idx, row in enumerate(rows):
+                gap =0
+
+                for jdx, col in enumerate(row):
+                    width=7
+                    columnspan=1
+                    colunm = jdx + gap
+                    label = col
+                    match col: 
+                    
+                        case "Lang":
+                            columnspan=2
+                            width = 20
+                            gap +=1
+                            Button(frame, text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, pady=3,column=colunm,columnspan=columnspan)
+                        case "Space":
+                            columnspan=11
+                            width = 80
+                            gap+=7
+                            Button(frame, text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, column=colunm,columnspan=columnspan)
+                        case _:
+                            Button(frame, text=label,width=width,command=lambda name=label: key(name)).grid(row=idx, pady=3,column=colunm,columnspan=columnspan)
 
 
     def patient_info():
+        nonlocal entry
+        entry = ''
         button_send['state'] = 'disabled'
 
         global INIT
@@ -82,8 +216,18 @@ def main_loop():
         sideBar.pack_forget()
         TopBar.pack_forget()
         BottomBar.pack_forget()
+        for c in range(3): SignBar.columnconfigure(index=c, weight=1)
+        for r in range(3): 
+            if r==2 or r==0:
+                SignBar.rowconfigure(index=r, weight=2)
+            else:  SignBar.rowconfigure(index=r, weight=1)
+        SignBar.pack(fill=tk.Y,expand=True)
+        
+        
+        keyframe.grid(sticky=S)
 
-        SignBar.pack(pady=200)
+
+        Keyboard()
 
     def button_click1():
         nonlocal tmp
@@ -250,6 +394,13 @@ def main_loop():
         path =""
         patient_info()
 
+    def entry_click(event):
+        nonlocal entry
+        entry = 'email'
+    def entry_click1(event):
+        nonlocal entry
+        entry = 'username'
+
     def button_send_click():
         shutil.make_archive("Analysis", 'zip', path)
         msg = MIMEMultipart()
@@ -293,16 +444,17 @@ def main_loop():
 
     # START FORM
     name_frame=tk.Frame(master=SignBar)
-    name_frame.pack()
+    name_frame.grid()
 
     email_frame = tk.Frame(master=SignBar,pady=10)
-    email_frame.pack()
+    email_frame.grid()
 
     username_label = Label(name_frame, text='ФИО',
                            font=label_font)
     username_label.pack(anchor="w",side=tk.LEFT)
 
     username_entry = Entry(name_frame,  font=font_entry)
+    username_entry.focus_set()
     username_entry.pack(anchor="center", side=tk.LEFT)
 
     email_label = Label(email_frame, text='Email',
@@ -312,12 +464,17 @@ def main_loop():
     email_entry.pack(anchor="center", side=tk.LEFT)
 
     sign_btn = Button(SignBar, text='Начать', command=sign_btn_click)
-    sign_btn.pack(anchor="center",pady=10)
+    sign_btn.grid()
+
+    
+
 
     patient_label = Label(BottomBar, text="username",
                           font=label_font)
     patient_email_label = Label(BottomBar, text="email",
                           font=label_font)
+    
+
 
     # SENSOR BUTTON
 
@@ -465,9 +622,11 @@ def main_loop():
                 recording()
                 print("RECOOOORDING!!!!!!!!!!!!!!!!!!!!!!!RECOOOORDING")
 
-
+        email_entry.bind("<FocusIn>", entry_click)
+        username_entry.bind("<FocusIn>", entry_click1)
+        
         root.update()  # Обновляем окно
-
+    
     root.destroy()  # Закрываем окно при завершении цикла
 
 # def send():
@@ -487,7 +646,7 @@ if __name__ == "__main__":
     if cap is None or not cap.isOpened():
         buffer.append(2)
         
-
+    
 
     main_loop()
     # send_email()
