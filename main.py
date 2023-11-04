@@ -15,27 +15,14 @@ from PIL import Image as Img
 from PIL import ImageTk  # $ pip install pillow
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import font as tkFont
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 ser = serial.Serial('/dev/ttyUSB0', 1000000)
 import re
 import cv2
 import datetime
 import time
-layout = {
-    'en':[
-        ['1','2','3','4','5','6','7','8','9','0','←'],
-        ['q','w','e','r','t','y','u','i','o','p'],
-        ['a','s','d','f','g','h','j','k','l'],
-        ['z','x','c','v','b','n','m','.','@'],
-        ['Lang','Space']
-    ],
-    'rus':[
-        ['1','2','3','4','5','6','7','8','9','0','.','←'],
-        ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],
-        ['ф','ы','в','а','п','р','о','л','д','ж',"э"],
-        ['я','ч','с','м','и','т','ь','б','ю','ё'],
-        ['Lang','Space']]
-}
+
 text=""
 state="rus"
 def main_loop():
@@ -50,8 +37,8 @@ def main_loop():
     path_to_csv = ""
     path_to_avi = ""
     shape = (0, 0)
-    font_entry = ('Arial', 20)
-    label_font = ('Arial', 30, 'bold')
+    font_entry = ('Arial', 36)
+    label_font = ('Arial', 36, 'bold')
     running = True
     sensor = {1: "Sthetoscope", 2: "Othoscope", 3: "PO",
               4: "ECG", 5: "Glucose ", 6: "Temperature", 7: "BP"}
@@ -60,13 +47,13 @@ def main_loop():
     'en':[
         ['1','2','3','4','5','6','7','8','9','0','←'],
         ['q','w','e','r','t','y','u','i','o','p'],
-        ['a','s','d','f','g','h','j','k','l'],
-        ['z','x','c','v','b','n','m','.','@'],
+        ['a','s','d','f','g','h','j','k','l','-',],
+        ['z','x','c','v','b','n','m','.','@','_'],
         ['Lang','Space']
     ],
     'rus':[
-        ['1','2','3','4','5','6','7','8','9','0','.','←'],
-        ['й','ц','у','к','е','н','г','ш','щ','з','х','ъ'],
+        ['1','2','3','4','5','6','7','8','9','0','←'],
+        ['й','ц','у','к','е','н','г','ш','щ','з','х'],
         ['ф','ы','в','а','п','р','о','л','д','ж',"э"],
         ['я','ч','с','м','и','т','ь','б','ю','ё'],
         ['Lang','Space']]
@@ -74,11 +61,11 @@ def main_loop():
 
     # Создаем окно
     root = tk.Tk(   )
-    # root.attributes("-fullscreen", True)
+    root.attributes("-fullscreen", True)
     root.title("MedBox")
     root.geometry('1920x1080')
     
-    
+    bFont=tkFont.Font(size=36)
 
 
     TopBar= tk.Frame(master=root)
@@ -185,7 +172,7 @@ def main_loop():
                 gap =0
 
                 for jdx, col in enumerate(row):
-                    width=7
+                    width=4
                     columnspan=1
                     colunm = jdx + gap
                     label = col
@@ -193,16 +180,16 @@ def main_loop():
                     
                         case "Lang":
                             columnspan=2
-                            width = 20
+                            width = 8
                             gap +=1
-                            Button(frame, text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, pady=3,column=colunm,columnspan=columnspan)
+                            tk.Button(frame, font=bFont,height=2,text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, padx=3,pady=3,column=colunm,columnspan=columnspan)
                         case "Space":
-                            columnspan=11
-                            width = 80
+                            columnspan=8
+                            width = 30
                             gap+=7
-                            Button(frame, text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, column=colunm,columnspan=columnspan)
+                            tk.Button(frame,font=bFont, height=2,text=label,width=width, command=lambda name=label: key(name)).grid(row=idx, padx=3, column=colunm,columnspan=columnspan)
                         case _:
-                            Button(frame, text=label,width=width,command=lambda name=label: key(name)).grid(row=idx, pady=3,column=colunm,columnspan=columnspan)
+                            tk.Button(frame, font=bFont,height=2,text=label,width=width,command=lambda name=label: key(name)).grid(row=idx, padx=3,pady=3,column=colunm,columnspan=columnspan)
 
 
     def patient_info():
@@ -230,6 +217,7 @@ def main_loop():
         Keyboard()
 
     def button_click1():
+        #button1['bg']='red'
         nonlocal tmp
         nonlocal running
         button_stop_click()
@@ -333,7 +321,7 @@ def main_loop():
             path_to_avi = path +"/"+ sensor[tmp] + '_' + timestamp + '.avi'
             video_avi = cv2.VideoWriter(path_to_avi,cv2.VideoWriter_fourcc('M','J','P','G'), 20.0, (w, h))
         isRecord = 1
-         
+
     def button_stop_record_click():
         try:
             if len(os.listdir(path)) == 0:
@@ -440,7 +428,7 @@ def main_loop():
     
 
     s = Style()
-    s.configure('.', font=('Arial',30,'bold'))
+    s.configure('.', font=('Arial',36,'bold'))
 
     # START FORM
     name_frame=tk.Frame(master=SignBar)
