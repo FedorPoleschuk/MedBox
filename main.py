@@ -216,15 +216,7 @@ def main_loop():
 
 
         Keyboard()
-    
-    def eraseToDefault():
-        # button1['state'] = 'disabled'
-        # button2['state'] = 'disabled'
-        # button1['state'] = '!disabled'
-        # button1['state'] = '!disabled'
-        # button1['state'] = '!disabled'
-        # button1['state'] = '!disabled'
-        pass
+
 
     def button_click1():
         nonlocal tmp
@@ -302,7 +294,6 @@ def main_loop():
         camera.pack_forget()
         button_start_record.pack_forget()
         button_stop_record.pack_forget()
-        eraseToDefault()
         run = False
         cap.release()
 
@@ -476,22 +467,22 @@ def main_loop():
 
     # SENSOR BUTTON
     style = Style()
-    style.map("PButton")
-    style.configure('TRadiobutton', bg='black',
+    style.configure('TRadiobutton', background = '#bab6b6', 
+                        foreground="black",
                         indicatorrelief=tk.FLAT,
                         indicatormargin=-1,
                         indicatordiameter=-1,
                         relief=tk.RAISED,
                         focusthickness=0, highlightthickness=0, padding=5)
-    style.map("TRadiobutton", background=[('selected', '#bab6b6'), ('!selected',"#fdfdfd")])
+    style.map("TRadiobutton", background=[('selected', '#bab6b6'), ('!selected',"#d9d9d9")])
 
     var = StringVar()
 
     image1 = ImageTk.PhotoImage(file="./stethoscope.png")
     # button1 = Button(sideBar, image=image1, text="Нажми меня",
                     #  command=button_click1)
-    button1 = Radiobutton(sideBar, image=image1, text="Нажми меня",
-                    command=button_click1, value=1, style="TRadiobutton", variable=var)
+    button1 = Radiobutton(sideBar, style="TRadiobutton", image=image1, text="Нажми меня",
+                    command=button_click1, value=1, variable=var)
     button1.pack()
     if 1 in buffer:
         button2['state'] = 'disabled'
