@@ -9,6 +9,7 @@ from transliterate import translit, get_available_language_codes
 import struct
 import tkinter as tk
 import serial
+import matplotlib
 from matplotlib.figure import Figure
 import pandas as pd
 from PIL import Image as Img
@@ -27,7 +28,7 @@ text=""
 state="rus"
 def main_loop():
     entry=""
-    INIT = ""
+    INIT = False
     tmp = 0
     isRecord = 0
     timestamp = ""
@@ -198,7 +199,7 @@ def main_loop():
         button_send['state'] = 'disabled'
 
         global INIT
-        INIT = 1
+        INIT = True
         button_stop_click()
         sideBar.pack_forget()
         TopBar.pack_forget()
@@ -215,9 +216,17 @@ def main_loop():
 
 
         Keyboard()
+    
+    def eraseToDefault():
+        # button1['state'] = 'disabled'
+        # button2['state'] = 'disabled'
+        # button1['state'] = '!disabled'
+        # button1['state'] = '!disabled'
+        # button1['state'] = '!disabled'
+        # button1['state'] = '!disabled'
+        pass
 
     def button_click1():
-        #button1['bg']='red'
         nonlocal tmp
         nonlocal running
         button_stop_click()
@@ -293,6 +302,7 @@ def main_loop():
         camera.pack_forget()
         button_start_record.pack_forget()
         button_stop_record.pack_forget()
+        eraseToDefault()
         run = False
         cap.release()
 
@@ -465,40 +475,53 @@ def main_loop():
 
 
     # SENSOR BUTTON
+    style = Style()
+    style.map("PButton")
+    style.configure('TRadiobutton', bg='black',
+                        indicatorrelief=tk.FLAT,
+                        indicatormargin=-1,
+                        indicatordiameter=-1,
+                        relief=tk.RAISED,
+                        focusthickness=0, highlightthickness=0, padding=5)
+    style.map("TRadiobutton", background=[('selected', '#bab6b6'), ('!selected',"#fdfdfd")])
+
+    var = StringVar()
 
     image1 = ImageTk.PhotoImage(file="./stethoscope.png")
-    button1 = Button(sideBar, image=image1, text="Нажми меня",
-                     command=button_click1)
+    # button1 = Button(sideBar, image=image1, text="Нажми меня",
+                    #  command=button_click1)
+    button1 = Radiobutton(sideBar, image=image1, text="Нажми меня",
+                    command=button_click1, value=1, style="TRadiobutton", variable=var)
     button1.pack()
     if 1 in buffer:
         button2['state'] = 'disabled'
 
     image2 = ImageTk.PhotoImage(file="ear.png")
-    button2 = Button(sideBar, image=image2,
-                        text="Нажми меня", command=button_click2)
+    button2 = Radiobutton(sideBar, image=image2,
+                        text="Нажми меня", command=button_click2, value=2, variable=var)
     button2.pack()
     print(Button)
     if 2 in buffer:
         button2['state'] = 'disabled'
 
     image3 = ImageTk.PhotoImage(file="pulse-oximeter.png")
-    button3 = Button(sideBar, image=image3, command=button_click3)
+    button3 = Radiobutton(sideBar, image=image3, command=button_click3, value=3, variable=var)
     button3.pack()
 
     image4 = ImageTk.PhotoImage(file="ecg-lines.png")
-    button4 = Button(sideBar, image=image4, command=button_click4)
+    button4 = Radiobutton(sideBar, image=image4, command=button_click4, value=4, variable=var)
     button4.pack()
 
     image5 = ImageTk.PhotoImage(file="red-blood-cells.png")
-    button5 = Button(sideBar, image=image5, command=button_click5)
+    button5 = Radiobutton(sideBar, image=image5, command=button_click5, value=5, variable=var)
     button5.pack()
 
     image6 = ImageTk.PhotoImage(file="temperature.png")
-    button6 = Button(sideBar, image=image6, command=button_click6)
+    button6 = Radiobutton(sideBar, image=image6, command=button_click6, value=6, variable=var)
     button6.pack()
 
     image7 = ImageTk.PhotoImage(file="arm.png")
-    button7 = Button(sideBar, image=image7, command=button_click7)
+    button7 = Radiobutton(sideBar, image=image7, command=button_click7, value=7, variable=var)
     button7.pack()
 
     button_start = Button(TopBar, text="Start", command=button_start_click)
@@ -528,6 +551,11 @@ def main_loop():
     # Устанавливаем флаг для цикла
 
     # Создаем объект Figure из Matplotlib
+    font = {'family' : 'normal',
+        'weight' : 'bold',
+        'size'   : 26}
+
+    matplotlib.rc('font', **font)
     fig = Figure(figsize=(16, 12), dpi=100)
     ax = fig.add_subplot(111)
     ax.set_title("График случайных чисел")
@@ -553,7 +581,7 @@ def main_loop():
             x_values.append(len(x_values) + 1)
             y_values.append(int(value[0]))            
             ax.clear()
-            ax.plot(x_values[-100:], y_values[-100:])
+            ax.plot(x_values[-100:], y_values[-100:], linewidth=6.0, c='k')
             # ax.set_title("График случайных чисел")
             ax.grid(color='grey', linestyle='--', linewidth=1)
             canvas.draw()
@@ -585,7 +613,7 @@ def main_loop():
         camera.configure(image=photo_image)
         
     run = False
-    if INIT == "":
+    if not INIT:
         patient_info()
 
     while running:
